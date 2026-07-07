@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 @import "tailwindcss";
+=======
+@import "tailwindcss";
+@plugin "daisyui";
+>>>>>>> 85fd24e854da96d35e737001bd644cd1d69c570d
