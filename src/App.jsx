@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from 'react'
 import './App.css'
-import Navbar from "./Navbar";
-import Home from "./Home";
+import Navbar from "./pages/Navbar";
+import Home from "./pages/Home";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,7 +12,6 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        
       </Routes>
     </BrowserRouter>
   )
