@@ -3,7 +3,7 @@ import Lanyard from "../component/Lanyard";
 
 const Home = () => {
   return (
-    <div className="h-screen w-full">
+    <div className="relative h-screen w-full overflow-hidden bg-base-100">
 
       <Lanyard
         position={[0,0,24]}

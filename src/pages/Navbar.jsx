@@ -154,7 +154,7 @@ export default function SubmenuSidebarNav({
   };
 
   return (
-    <div className="relative h-screen w-full font-sans bg-base-200">
+    <div className="h-20 w-full bg-base-100">
       {/* Transparent top navbar */}
       <div
         className={`fixed inset-x-0 top-0 z-20 flex h-20 items-center justify-between px-6 md:px-10 transition-colors duration-300 ${
