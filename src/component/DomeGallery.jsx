@@ -124,7 +124,10 @@ export default function DomeGallery({
   openedImageHeight = '400px',
   imageBorderRadius = '30px',
   openedImageBorderRadius = '30px',
-  grayscale = true
+  grayscale = true,
+  autoRotate = true,
+  autoRotateSpeed = 0.045,
+  autoRotateResumeDelay = 1200
 }) {
   const rootRef = useRef(null);
   const mainRef = useRef(null);
@@ -299,6 +302,28 @@ export default function DomeGallery({
     },
     [dragDampening, maxVerticalRotationDeg, stopInertia]
   );
+
+  useEffect(() => {
+  if (!autoRotate) return;
+  let raf;
+  const step = () => {
+    const now = performance.now();
+    const idle =
+      !draggingRef.current &&
+      !inertiaRAF.current &&
+      !focusedElRef.current &&
+      now - lastDragEndAt.current > autoRotateResumeDelay;
+
+    if (idle) {
+      const nextY = wrapAngleSigned(rotationRef.current.y + autoRotateSpeed);
+      rotationRef.current = { x: rotationRef.current.x, y: nextY };
+      applyTransform(rotationRef.current.x, nextY);
+    }
+    raf = requestAnimationFrame(step);
+  };
+  raf = requestAnimationFrame(step);
+  return () => cancelAnimationFrame(raf);
+}, [autoRotate, autoRotateSpeed, autoRotateResumeDelay]);
 
   useGesture(
     {
@@ -817,14 +842,13 @@ export default function DomeGallery({
                       if (openingRef.current) return;
                       openItemFromElement(e.currentTarget);
                     }}
-                    onPointerUp={e => {
-                      if (e.pointerType !== 'touch') return;
-                      if (draggingRef.current) return;
-                      if (movedRef.current) return;
-                      if (performance.now() - lastDragEndAt.current < 80) return;
-                      if (openingRef.current) return;
-                      openItemFromElement(e.currentTarget);
-                    }}
+                    onPointerUp={e => (
+                      e.target.releasePointerCapture(e.pointerId),
+                      drag(false),
+                      !movedRef.current && setFlipped(f => !f),
+                      (dragStartY.current = null),
+                      (movedRef.current = false)
+                    )}
                     style={{
                       inset: '10px',
                       borderRadius: `var(--tile-radius, ${imageBorderRadius})`,

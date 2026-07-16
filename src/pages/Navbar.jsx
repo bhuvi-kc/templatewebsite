@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight } from "lucide-react";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const transition = { duration: 0.5, ease: [0.54, 0.01, 0.19, 0.93] };
 
@@ -70,7 +70,7 @@ function NavLink({ title, href = "#", onClick, hasSubmenu, active }) {
     <a
       href={href}
       onClick={onClick}
-      className="group flex items-center justify-between py-3 text-[18px] leading-none tracking-tight text-base-content"
+      className="group flex items-center justify-between py-3 text-[18px] leading-none tracking-tight text-white"
     >
       <span className="underline decoration-transparent underline-offset-4 transition-[text-decoration-color] duration-200 ease-out hover:decoration-current">
         {title}
@@ -92,7 +92,7 @@ function SubLink({ title, href = "#" }) {
   return (
     <a
       href={href}
-      className="inline-flex w-fit items-center py-1 text-[17px] leading-tight text-base-content underline decoration-transparent underline-offset-4 transition-[text-decoration-color] duration-200 ease-out hover:decoration-current"
+      className="inline-flex w-fit items-center py-1 text-[17px] leading-tight text-white underline decoration-transparent underline-offset-4 transition-[text-decoration-color] duration-200 ease-out hover:decoration-current"
     >
       {title}
     </a>
@@ -100,7 +100,6 @@ function SubLink({ title, href = "#" }) {
 }
 
 function SubmenuView({ item }) {
-  
   return (
     <motion.div
       key={item.title}
@@ -110,13 +109,13 @@ function SubmenuView({ item }) {
       transition={transition}
       className="flex h-full flex-col gap-12 overflow-auto p-8 pt-16"
     >
-      <p className="text-[32px] font-medium leading-none tracking-tight text-base-content">
+      <p className="text-[32px] font-medium leading-none tracking-tight text-white">
         {item.title}
       </p>
       <div className="flex flex-col gap-8 ">
         {item.submenu.columns.map((col, i) => (
           <div key={i} className="flex flex-col gap-1">
-            <p className="mb-1 text-sm tracking-tight text-base-content/50">
+            <p className="mb-1 text-sm tracking-tight text-white/50">
               {col.tagline}
             </p>
             <div className="flex flex-col">
@@ -136,16 +135,17 @@ export default function SubmenuSidebarNav({
   widthOpen = 280,
   brandName = "DOMÉ",
 }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-  const handleScroll = () => {
-    setScrolled(window.scrollY > 20);
-  };
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const close = () => {
@@ -153,12 +153,22 @@ export default function SubmenuSidebarNav({
     setActiveSubmenu(null);
   };
 
+const goHome = (e) => {
+  e.preventDefault();
+  close();
+  window.dispatchEvent(new Event("dome:gohome"));
+  if (window.location.pathname !== "/") {
+    navigate("/");
+  }
+};
+
   return (
-    <div className="h-20 w-full bg-base-100">
+    <>
+    <div className="h-20 w-full bg-[#080808]">
       {/* Transparent top navbar */}
       <div
         className={`fixed inset-x-0 top-0 z-20 flex h-20 items-center justify-between px-6 md:px-10 transition-colors duration-300 ${
-          scrolled ? "bg-base-100/40" : "bg-transparent"
+          scrolled ? "bg-[#080808]/95 backdrop-blur-sm" : "bg-transparent"
         }`}
       >
         {/* Left: menu button */}
@@ -167,48 +177,28 @@ export default function SubmenuSidebarNav({
             <button
               onClick={() => setOpen(true)}
               aria-label="Open menu"
-              className="flex h-5 w-5 items-center justify-center rounded-full text-base-content transition-colors hover:bg-base-content/10"
+              className="flex h-5 w-5 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
             >
               <Menu size={30} strokeWidth={1.75} />
             </button>
           )}
         </div>
 
-        {/* Centered brand */}
+        {/* Centered brand — click resets and redirects to lanyard */}
         <a
-          href="#"
-          className="flex-1 text-center text-[30px] font-semibold tracking-[0.2em] text-base-content"
+          href="/"
+          onClick={goHome}
+          className="flex-1 text-center text-[30px] font-semibold tracking-[0.2em] text-white"
         >
           {brandName}
         </a>
 
-        {/* Right: theme toggle only */}
-        <div className="flex flex-1 items-center justify-end">
-          <label className="flex cursor-pointer items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-base-content/60">
-              <circle cx="12" cy="12" r="5" />
-              <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-            </svg>
-            <input
-              type="checkbox"
-              value="mydark"
-              className="toggle toggle-xs opacity-70 theme-controller"
-              defaultChecked={localStorage.getItem("theme") === "mydark"}
-              onChange={(e) => {
-                const theme = e.target.checked ? "mydark" : "light";
-                document.documentElement.setAttribute("data-theme", theme);
-                localStorage.setItem("theme", theme);
-              }}
-            />
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-base-content/50">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </label>
-        </div>
-      </div>
+      {/* Right: empty spacer to keep brand centered */}
+      <div className="flex flex-1 items-center justify-end" />
+    </div>
 
       <motion.div
-        className="fixed left-0 top-0 z-30 flex flex-col overflow-hidden bg-base-100 shadow-[0_0_40px_rgba(0,0,0,0.08)]"
+        className="fixed left-0 top-0 z-30 flex flex-col overflow-hidden bg-[#080808] shadow-[0_0_40px_rgba(0,0,0,0.5)]"
         initial={false}
         animate={{
           width: open ? widthOpen : 0,
@@ -221,7 +211,7 @@ export default function SubmenuSidebarNav({
             <button
               onClick={close}
               aria-label="Close menu"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-base-content transition-colors hover:bg-base-content/10"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
             >
               <X size={20} strokeWidth={1.75} />
             </button>
@@ -264,19 +254,19 @@ export default function SubmenuSidebarNav({
             {activeSubmenu !== null && (
               <button
                 onClick={() => setActiveSubmenu(null)}
-                className="absolute left-8 top-8 text-sm text-base-content/50 underline-offset-2 hover:underline"
+                className="absolute left-8 top-8 text-sm text-white/50 underline-offset-2 hover:underline"
               >
                 ← Back
               </button>
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-6 border-t border-base-content/10 px-6 py-6">
+          <div className="flex shrink-0 items-center gap-6 border-t border-white/10 px-6 py-6">
             {data.footerLinks.map((l, i) => (
               <a
                 key={i}
                 href={l.href}
-                className="text-[13px] text-base-content opacity-70 transition-opacity hover:opacity-100"
+                className="text-[13px] text-white opacity-70 transition-opacity hover:opacity-100"
               >
                 {l.title}
               </a>
@@ -285,5 +275,6 @@ export default function SubmenuSidebarNav({
         </div>
       </motion.div>
     </div>
+    </>
   );
 }
