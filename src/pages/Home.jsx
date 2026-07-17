@@ -80,7 +80,7 @@ const Home = () => {
           >
             <FluidTrail
               color="#0D0C70"
-              mouseRadius={57}
+              mouseRadius={15}
               trailDuration={6.5}
               fade="outside"
             />
