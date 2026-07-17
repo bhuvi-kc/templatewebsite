@@ -76,12 +76,12 @@ const Home = () => {
           <motion.div
             className="absolute inset-0 z-0"
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
           >
             <FluidTrail
               color="#0D0C70"
               mouseRadius={15}
-              trailDuration={6.5}
+              trailDuration={8}
               fade="outside"
             />
           </motion.div>
