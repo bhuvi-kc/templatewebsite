@@ -6,20 +6,25 @@ import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei
 import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 
+// replace with your own imports, see the usage snippet for details
 import cardGLB from './card.glb';
 import lanyard from './lanyard.png';
 
 import * as THREE from 'three';
 
-
 extend({ MeshLineGeometry, MeshLineMaterial });
 
+// 1x1 transparent pixel — lets useTexture be called unconditionally when a
+// front/back image isn't supplied.
 const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
+// The card model's front face is UV-mapped to the LEFT half of the texture
+// atlas and the back face to the RIGHT half (measured from card.glb). Each
+// custom image is composited into its own half so the two faces render
+// independently, aspect-preserving (no stretching).
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
-
 
 export default function Lanyard({
   position = [0, 0, 30],
@@ -42,7 +47,7 @@ export default function Lanyard({
   }, []);
 
   return (
-    <div className="relative z-0 w-full h-full flex justify-center items-center transform scale-100 origin-center">
+    <div className="relative z-0 w-full h-screen flex justify-center items-center transform scale-100 origin-center">
       <Canvas
         camera={{ position: position, fov: fov }}
         dpr={[1, isMobile ? 1.5 : 2]}
@@ -105,7 +110,6 @@ function Band({
   imageFit = 'cover',
   lanyardImage = null,
   lanyardWidth = 1
-  
 }) {
   const band = useRef(),
     fixed = useRef(),
@@ -122,9 +126,13 @@ function Band({
   const texture = useTexture(lanyardImage || lanyard);
   const dragStartY = useRef(null);
   const movedRef = useRef(false);
-  const [flipped, setFlipped] = useState(false);
+  // useTexture must be called unconditionally; use a blank pixel when an image
+  // isn't supplied for a given face, then skip compositing it below.
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
   const backTex = useTexture(backImage || BLANK_PIXEL);
+
+  // Composite the front/back images into the card's texture atlas (front = left
+  // half, back = right half). Each image is drawn aspect-preserving (no stretch).
   const cardMap = useMemo(() => {
     const baseMap = materials.base.map;
     if (!frontImage && !backImage) return baseMap;

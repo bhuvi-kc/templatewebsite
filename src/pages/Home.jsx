@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Lanyard from "../component/Lanyard";
 import DomeGallery from "../component/DomeGallery";
+import FluidTrail from "../component/FluidTrail";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
@@ -69,10 +70,28 @@ const Home = () => {
         }}
       />
 
+      {/* Fluid trail — sits behind the Lanyard, tracks cursor everywhere */}
       <AnimatePresence>
         {!open && (
           <motion.div
-            className="absolute inset-x-0 top-0 bottom-0"
+            className="absolute inset-0 z-0"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <FluidTrail
+              color="#0D0C70"
+              mouseRadius={57}
+              trailDuration={6.5}
+              fade="outside"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {!open && (
+          <motion.div
+            className="absolute inset-x-0 top-0 bottom-0 z-10"
             exit={{
               opacity: 0,
               scale: 0.85,
@@ -84,11 +103,10 @@ const Home = () => {
             }}
           >
             <Lanyard
-              position={[0, 0, 24]}
+              position={[0, 0, 15]}
               gravity={[0, -40, 0]}
               frontImage="/canva-logo.png"
               backImage="/card-back.png"
-              // lanyardImage="/dome-diamond.png"
               onPull={handlePull}
             />
           </motion.div>
