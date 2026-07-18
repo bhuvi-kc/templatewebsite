@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import OptionWheel from "../component/OptionWheel";
 
 const transition = { duration: 0.5, ease: [0.54, 0.01, 0.19, 0.93] };
 
@@ -107,7 +108,7 @@ function SubmenuView({ item }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -24 }}
       transition={transition}
-      className="flex h-full flex-col gap-12 overflow-auto p-8 pt-16"
+      className="flex flex-col h-full gap-12 p-8 pt-16 overflow-auto"
     >
       <p className="text-[32px] font-medium leading-none tracking-tight text-white">
         {item.title}
@@ -172,12 +173,12 @@ const goHome = (e) => {
         }`}
       >
         {/* Left: menu button */}
-        <div className="flex flex-1 items-center justify-start">
+        <div className="flex items-center justify-start flex-1">
           {!open && (
             <button
               onClick={() => setOpen(true)}
               aria-label="Open menu"
-              className="flex h-5 w-5 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+              className="flex items-center justify-center w-5 h-5 text-white transition-colors rounded-full hover:bg-white/10"
             >
               <Menu size={30} strokeWidth={1.75} />
             </button>
@@ -194,7 +195,7 @@ const goHome = (e) => {
         </a>
 
       {/* Right: empty spacer to keep brand centered */}
-      <div className="flex flex-1 items-center justify-end" />
+      <div className="flex items-center justify-end flex-1" />
     </div>
 
       <motion.div
@@ -206,18 +207,18 @@ const goHome = (e) => {
         }}
         transition={transition}
       >
-        <div className="flex h-full flex-col" style={{ width: widthOpen }}>
-          <div className="relative z-10 flex h-20 shrink-0 items-center justify-end px-6">
+        <div className="flex flex-col h-full" style={{ width: widthOpen }}>
+          <div className="relative z-10 flex items-center justify-end h-20 px-6 shrink-0">
             <button
               onClick={close}
               aria-label="Close menu"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+              className="flex items-center justify-center text-white transition-colors rounded-full h-9 w-9 hover:bg-white/10"
             >
               <X size={20} strokeWidth={1.75} />
             </button>
           </div>
 
-          <div className="relative flex flex-1 flex-col overflow-hidden">
+          <div className="relative flex flex-col flex-1 overflow-hidden">
             <AnimatePresence mode="wait">
               {activeSubmenu === null ? (
                 <motion.div
@@ -226,7 +227,7 @@ const goHome = (e) => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 24 }}
                   transition={transition}
-                  className="flex h-full flex-col justify-between overflow-auto p-8"
+                  className="flex flex-col justify-between h-full p-8 overflow-auto"
                 >
                   <div className="flex flex-col">
                     {data.mainMenu.map((item, i) =>
@@ -254,14 +255,14 @@ const goHome = (e) => {
             {activeSubmenu !== null && (
               <button
                 onClick={() => setActiveSubmenu(null)}
-                className="absolute left-8 top-8 text-sm text-white/50 underline-offset-2 hover:underline"
+                className="absolute text-sm left-8 top-8 text-white/50 underline-offset-2 hover:underline"
               >
                 ← Back
               </button>
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-6 border-t border-white/10 px-6 py-6">
+          <div className="flex items-center gap-6 px-6 py-6 border-t shrink-0 border-white/10">
             {data.footerLinks.map((l, i) => (
               <a
                 key={i}
