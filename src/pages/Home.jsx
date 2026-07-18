@@ -64,7 +64,7 @@ const Home = () => {
       />
 
       {/* Fluid trail — sits behind the orb, tracks cursor everywhere */}
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {!open && (
           <motion.div
             className="absolute inset-0 z-0"
@@ -72,14 +72,14 @@ const Home = () => {
             transition={{ duration: 0.8 }}
           >
             <FluidTrail
-              color="#0D0C70"
-              mouseRadius={15}
+              color="#7F00FF"
+              mouseRadius={5}
               trailDuration={8}
               fade="outside"
             />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
      <AnimatePresence>
   {!open && (
