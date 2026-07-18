@@ -107,15 +107,15 @@ export default function SubmenuSidebarNav({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 24 }}
                 transition={transition}
-                className="flex flex-col justify-start h-full p-8 overflow-auto"
+                className="flex flex-col justify-center h-full p-8 overflow-auto"
               >
                 {/* Option Wheel */}
-                <div className="pt-2">
-                  <p className="mb-6 text-xs tracking-[0.35em] uppercase text-white/40">
+                <div className="">
+                  <p className=" text-xs tracking-[0.35em] uppercase text-white/40">
                     Explore
                   </p>
 
-                  <div className="h-[280px]">
+                  <div className="h-[400px] mb-50">
                     <OptionWheel
                       items={[
                         "Projects",

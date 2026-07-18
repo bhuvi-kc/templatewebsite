@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Lanyard from "../component/Lanyard";
+import GravityOrb from "../component/GravityOrb";
 import DomeGallery from "../component/DomeGallery";
 import FluidTrail from "../component/FluidTrail";
+import FluidGlass from "../component/FluidGlass"
+import SingularityPortal from "../component/SingularityPortal";
+import EventHorizon from "../component/EventHorizon";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
   const [showHint, setShowHint] = useState(false);
-  const [showRotateHint, setShowRotateHint] = useState(false);
   const triggered = React.useRef(false);
-  const hasInteracted = React.useRef(false);
 
   useEffect(() => {
     const t = setTimeout(() => setShowHint(true), 2000);
@@ -18,12 +19,6 @@ const Home = () => {
 
   const handlePull = (distance) => {
     if (showHint) setShowHint(false);
-
-    if (!hasInteracted.current) {
-      hasInteracted.current = true;
-      setTimeout(() => setShowRotateHint(true), 1500);
-      setTimeout(() => setShowRotateHint(false), 5500);
-    }
 
     if (distance > 2 && !triggered.current) {
       triggered.current = true;
@@ -34,10 +29,8 @@ const Home = () => {
   useEffect(() => {
     const handler = () => {
       triggered.current = false;
-      hasInteracted.current = false;
       setOpen(false);
       setShowHint(false);
-      setShowRotateHint(false);
       setTimeout(() => setShowHint(true), 2000);
     };
     window.addEventListener("dome:gohome", handler);
@@ -70,7 +63,7 @@ const Home = () => {
         }}
       />
 
-      {/* Fluid trail — sits behind the Lanyard, tracks cursor everywhere */}
+      {/* Fluid trail — sits behind the orb, tracks cursor everywhere */}
       <AnimatePresence>
         {!open && (
           <motion.div
@@ -88,30 +81,24 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {!open && (
-          <motion.div
-            className="absolute inset-x-0 top-0 bottom-0 z-10"
-            exit={{
-              opacity: 0,
-              scale: 0.85,
-              filter: "blur(8px)",
-            }}
-            transition={{
-              duration: 0.7,
-              ease: [0.4, 0, 0.2, 1],
-            }}
-          >
-            <Lanyard
-              position={[0, 0, 15]}
-              gravity={[0, -40, 0]}
-              frontImage="/canva-logo.png"
-              backImage="/card-back.png"
-              onPull={handlePull}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+     <AnimatePresence>
+  {!open && (
+    <motion.div
+      className="absolute inset-x-0 top-0 bottom-0 z-10"
+      exit={{
+        opacity: 0,
+        scale: 0.85,
+        filter: "blur(8px)",
+      }}
+      transition={{
+        duration: 0.7,
+        ease: [0.4, 0, 0.2, 1],
+      }}
+    >
+      <EventHorizon onPull={handlePull} threshold={160} />
+    </motion.div>
+  )}
+</AnimatePresence>
 
       {/* Pull hint */}
       <AnimatePresence>
@@ -124,7 +111,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
           >
             <p className="text-white/30 text-xs tracking-[0.25em] uppercase">
-              pull and rotate
+              pull down to open
             </p>
             <motion.div
               animate={{ y: [0, 6, 0] }}
@@ -138,32 +125,6 @@ const Home = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Rotate hint */}
-      <AnimatePresence>
-        {showRotateHint && !open && (
-          <motion.div
-            className="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-2 z-10 pointer-events-none"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.6 }}
-          >
-            <p className="text-white/30 text-xs tracking-[0.25em] uppercase">
-              rotate to open gallery
-            </p>
-            <motion.div
-              animate={{ rotate: [0, 20, -20, 0] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 8a6 6 0 1 0 6-6" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M2 4v4h4" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </motion.div>
           </motion.div>
@@ -194,6 +155,7 @@ const Home = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };
