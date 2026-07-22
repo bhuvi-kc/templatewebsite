@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import OptionWheel from "../component/OptionWheel";
+import Resources from "./Resources";
+import DomeGallery from "../component/DomeGallery";
 
 const transition = { duration: 0.5, ease: [0.54, 0.01, 0.19, 0.93] };
 
@@ -13,6 +15,16 @@ const defaultData = {
     { title: "Support", href: "#" },
     { title: "Contact", href: "#" },
   ],
+};
+
+// Map each wheel item to a route
+const routes = {
+  "Home": "/",
+  "About": "/about",
+  "DOMÉ Gallery": "/gallery",
+  "Template Kit": "/template-kit",
+  "Resources": "/resources",
+  "Contact": "/contact",
 };
 
 export default function SubmenuSidebarNav({
@@ -117,18 +129,19 @@ export default function SubmenuSidebarNav({
 
                   <div className="h-[400px] mb-50">
                     <OptionWheel
-                      items={[
-                        "Projects",
-                        "Services",
-                        "Studio",
-                        "Process",
-                        "Pricing",
-                        "Journal",
-                        "Resources",
-                        "Contact",
-                      ]}
+                      items={Object.keys(routes)}
                       onChange={(i, item) => {
-                        console.log(item);
+                        const path = routes[item];
+                        if (!path) return;
+
+                        close(); // collapse the sidebar
+
+                        if (item === "Home") {
+                          // reuse existing reset behavior
+                          window.dispatchEvent(new Event("dome:gohome"));
+                        }
+
+                        navigate(path);
                       }}
                     />
                   </div>
