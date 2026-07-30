@@ -5,6 +5,10 @@ import Navbar from "./pages/Navbar";
 import Home from "./pages/Home";
 import Resources from "./pages/Resources";
 import DomeGallery from "./component/DomeGallery";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import TemplateKit from "./pages/TemplateKit";
+import Footer from "./pages/Footer";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -26,7 +30,11 @@ function App() {
             </div>
           }
         />
+         <Route path="/about" element={<About />} />
+         <Route path="/template-kit" element={<TemplateKit />} />
+         <Route path="/contact" element={<Contact />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   )
 }
