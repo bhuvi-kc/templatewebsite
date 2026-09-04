@@ -9,6 +9,11 @@ export default function OptionWheel({
 }) {
   const [selected, setSelected] = useState(defaultSelected);
 
+  // Sync state if defaultSelected changes from parent
+  useEffect(() => {
+    setSelected(defaultSelected);
+  }, [defaultSelected]);
+
   const select = (index) => {
     if (index < 0 || index >= items.length) return;
 

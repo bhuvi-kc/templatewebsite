@@ -1,5 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -169,15 +169,16 @@ export default function TemplateKit() {
                 ))}
               </ul>
 
-              <button
-                className={`mt-8 py-3 text-sm font-medium rounded-xl transition-colors ${
+              <Link
+                to="/contact"
+                className={`mt-8 py-3 text-sm font-medium rounded-xl text-center transition-all cursor-pointer ${
                   kit.featured
-                    ? "bg-blue-500/80 hover:bg-blue-500 text-white"
+                    ? "bg-blue-500/80 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
                     : "bg-white/[0.05] hover:bg-white/10 text-white"
                 }`}
               >
                 Get {kit.name}
-              </button>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -226,7 +227,10 @@ export default function TemplateKit() {
         >
           <p className="text-sm text-white/40">
             Questions before you buy? Reach out on the{" "}
-            <span className="text-blue-400">Contact</span> page.
+            <Link to="/contact" className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-4">
+              Contact
+            </Link>{" "}
+            page.
           </p>
         </motion.div>
       </div>

@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 
 /**
@@ -13,8 +12,6 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion";
  */
 const EventHorizon = ({ onPull, threshold = 160 }) => {
   const y = useMotionValue(0);
-  const [dragging, setDragging] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
   const scale = useTransform(y, [0, threshold * 1.4], [1, 0.15]);
   const stretch = useTransform(y, [0, threshold], [1, 1.35]);
@@ -27,13 +24,9 @@ const EventHorizon = ({ onPull, threshold = 160 }) => {
     if (onPull) onPull((distance / threshold) * 3);
   };
 
-  const handleDragStart = () => setDragging(true);
-
   const handleDragEnd = (_, info) => {
-    setDragging(false);
     const distance = Math.max(0, info.offset.y);
     if (distance > threshold) {
-      setCollapsed(true);
       animate(y, distance + 400, { duration: 0.4, ease: [0.6, 0, 1, 1] });
     } else {
       animate(y, 0, { type: "spring", stiffness: 280, damping: 22 });
@@ -119,7 +112,6 @@ const EventHorizon = ({ onPull, threshold = 160 }) => {
           drag="y"
           dragConstraints={{ top: 0, bottom: threshold * 2 }}
           dragElastic={0.28}
-          onDragStart={handleDragStart}
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={{ y, scale }}

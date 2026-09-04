@@ -1,5 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 /* ------------------------------------------------------------------ */
 /*  DomeSphere — a lightweight, dependency-free 3D emblem.             */
@@ -251,8 +251,10 @@ export default function About() {
         >
           <p className="text-sm text-white/40">
             Curious what's under the hood? See the{" "}
-            <span className="text-blue-400">Resources</span> page for the
-            full stack.
+            <Link to="/resources" className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-4">
+              Resources
+            </Link>{" "}
+            page for the full stack.
           </p>
         </motion.div>
       </section>

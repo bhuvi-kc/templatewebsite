@@ -405,7 +405,7 @@ export default function DomeGallery({
           tapTargetRef.current = null;
 
           if (cancelTapRef.current) setTimeout(() => (cancelTapRef.current = false), 120);
-          if (movedRef.current) lastDragEndAt.current = performance.now();
+          if (movedRef.current) lastDragEndAt.current = event.timeStamp;
           movedRef.current = false;
           if (pointerTypeRef.current === 'touch') unlockScroll();
         }
@@ -619,6 +619,11 @@ export default function DomeGallery({
     overlay.style.borderRadius = openedImageBorderRadius;
     overlay.style.overflow = 'hidden';
     overlay.style.boxShadow = '0 10px 30px rgba(0,0,0,.35)';
+    overlay.style.cursor = 'zoom-out';
+    overlay.title = 'Click or press Esc to close';
+    overlay.addEventListener('click', () => {
+      scrimRef.current?.click();
+    });
 
     const rawSrc = parent.dataset.src || el.querySelector('img')?.src || '';
     const rawAlt = parent.dataset.alt || el.querySelector('img')?.alt || '';
@@ -754,16 +759,16 @@ export default function DomeGallery({
       }
     }
     
-    // body.dg-scroll-lock {
-    //   position: fixed !important;
-    //   top: 0;
-    //   left: 0;
-    //   width: 100% !important;
-    //   height: 100% !important;
-    //   overflow: hidden !important;
-    //   touch-action: none !important;
-    //   overscroll-behavior: contain !important;
-    // }
+    /* body.dg-scroll-lock {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      touch-action: none !important;
+      overscroll-behavior: contain !important;
+    } */
     .item__image {
       position: absolute;
       inset: 10px;
@@ -838,17 +843,10 @@ export default function DomeGallery({
                     onClick={e => {
                       if (draggingRef.current) return;
                       if (movedRef.current) return;
-                      if (performance.now() - lastDragEndAt.current < 80) return;
+                      if (e.timeStamp - lastDragEndAt.current < 80) return;
                       if (openingRef.current) return;
                       openItemFromElement(e.currentTarget);
                     }}
-                    onPointerUp={e => (
-                      e.target.releasePointerCapture(e.pointerId),
-                      drag(false),
-                      !movedRef.current && setFlipped(f => !f),
-                      (dragStartY.current = null),
-                      (movedRef.current = false)
-                    )}
                     style={{
                       inset: '10px',
                       borderRadius: `var(--tile-radius, ${imageBorderRadius})`,

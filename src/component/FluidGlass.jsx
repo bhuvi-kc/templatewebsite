@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 import * as THREE from 'three';
 import { useRef, useState, useEffect, memo } from 'react';
 import { Canvas, createPortal, useFrame, useThree } from '@react-three/fiber';
@@ -180,7 +179,11 @@ function NavItems({ items }) {
 
   const handleNavigate = link => {
     if (!link) return;
-    link.startsWith('#') ? (window.location.hash = link) : (window.location.href = link);
+    if (link.startsWith('#')) {
+      window.location.assign(link);
+    } else {
+      window.location.assign(link);
+    }
   };
 
   return (

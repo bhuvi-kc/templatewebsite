@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 const navLinks = [
@@ -11,9 +10,9 @@ const navLinks = [
 ];
 
 const legalLinks = [
-  { title: "Terms", href: "#" },
-  { title: "Privacy", href: "#" },
-  { title: "Support", href: "#" },
+  { title: "Terms", href: "/contact" },
+  { title: "Privacy", href: "/contact" },
+  { title: "Support", href: "/contact" },
 ];
 
 export default function Footer({ brandName = "DOMÉ" }) {
@@ -62,12 +61,12 @@ export default function Footer({ brandName = "DOMÉ" }) {
             <ul className="mt-4 space-y-2">
               {legalLinks.map((l) => (
                 <li key={l.title}>
-                  <a
-                    href={l.href}
+                  <Link
+                    to={l.href}
                     className="text-sm text-white/60 hover:text-white transition-colors"
                   >
                     {l.title}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>

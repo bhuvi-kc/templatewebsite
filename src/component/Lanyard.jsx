@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, extend, useFrame } from '@react-three/fiber';
@@ -123,7 +122,13 @@ function Band({
     dir = new THREE.Vector3();
   const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 4, linearDamping: 4 };
   const { nodes, materials } = useGLTF(cardGLB);
-  const texture = useTexture(lanyardImage || lanyard);
+  const sourceTexture = useTexture(lanyardImage || lanyard);
+  const texture = useMemo(() => {
+    const configuredTexture = sourceTexture.clone();
+    configuredTexture.wrapS = configuredTexture.wrapT = THREE.RepeatWrapping;
+    configuredTexture.needsUpdate = true;
+    return configuredTexture;
+  }, [sourceTexture]);
   const dragStartY = useRef(null);
   const movedRef = useRef(false);
   // useTexture must be called unconditionally; use a blank pixel when an image
@@ -177,9 +182,13 @@ function Band({
     composite.needsUpdate = true;
     return composite;
   }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
-  const [curve] = useState(
-    () =>
-      new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
+  const curve = useMemo(
+    () => new THREE.CatmullRomCurve3(
+      [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()],
+      false,
+      'chordal',
+    ),
+    [],
   );
   const [dragged, drag] = useState(false);
   const [hovered, hover] = useState(false);
@@ -234,9 +243,6 @@ function Band({
       card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
     }
   });
-
-  curve.curveType = 'chordal';
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
   return (
     <>

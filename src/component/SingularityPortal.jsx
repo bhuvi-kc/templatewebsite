@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 
 const PARTICLE_COUNT = 45;

@@ -264,7 +264,10 @@ export default function FluidTrail({
 }) {
   const canvasRef = useRef(null)
   const propsRef = useRef({ color, mouseRadius, trailDuration, fade })
-  propsRef.current = { color, mouseRadius, trailDuration, fade }
+
+  useEffect(() => {
+    propsRef.current = { color, mouseRadius, trailDuration, fade }
+  }, [color, mouseRadius, trailDuration, fade])
 
   useEffect(() => {
     const canvas = canvasRef.current

@@ -268,10 +268,14 @@ export const LaserFlow = ({
   const currentDprRef = useRef(1);
   const lastSizeRef = useRef({ width: 0, height: 0, dpr: 0 });
   const fpsSamplesRef = useRef([]);
-  const lastFpsCheckRef = useRef(performance.now());
+  const lastFpsCheckRef = useRef(0);
   const emaDtRef = useRef(16.7);
   const pausedRef = useRef(false);
   const inViewRef = useRef(true);
+
+  useEffect(() => {
+    lastFpsCheckRef.current = performance.now();
+  }, []);
 
   const hexToRGB = hex => {
     let c = hex.trim();

@@ -1,21 +1,30 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
 import './App.css'
 import Navbar from "./pages/Navbar";
-import Home from "./pages/Home";
-import Resources from "./pages/Resources";
-import DomeGallery from "./component/DomeGallery";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import TemplateKit from "./pages/TemplateKit";
-import Footer from "./pages/Footer";
+const Home = lazy(() => import("./pages/Home"));
+const Resources = lazy(() => import("./pages/Resources"));
+const DomeGallery = lazy(() => import("./component/DomeGallery"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const TemplateKit = lazy(() => import("./pages/Templatekit"));
+const Footer = lazy(() => import("./pages/Footer"));
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <BrowserRouter>
       <Navbar />
+      <Suspense fallback={<main className="min-h-screen bg-[#080808]" aria-busy="true" />}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/resources" element={<Resources />} />
@@ -35,6 +44,7 @@ function App() {
          <Route path="/contact" element={<Contact />} />
       </Routes>
       <Footer />
+      </Suspense>
     </BrowserRouter>
   )
 }

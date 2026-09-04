@@ -17,5 +17,10 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // React 19's JSX transform does not require the React identifier in scope.
+      // Retain no-unused-vars as a warning while legacy visual components are migrated.
+      'no-unused-vars': 'warn',
+    },
   },
 ])
