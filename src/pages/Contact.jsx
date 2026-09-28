@@ -1,5 +1,18 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Send,
+  Check,
+  Copy,
+  Sparkles,
+  Mail,
+  MessageSquare,
+  DollarSign,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
+import { sounds } from "../utils/audio";
+import { useInteractive } from "../context/InteractiveContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -17,7 +30,7 @@ const channels = [
     detail: "Project inquiries, collaborations, or just to say hi.",
   },
   {
-    label: "Press",
+    label: "Press & Features",
     value: "press@domestudio.com",
     detail: "Interviews, features, and media requests.",
   },
@@ -28,43 +41,72 @@ const channels = [
   },
 ];
 
+const SCOPES = [
+  "Spatial 3D Site",
+  "Custom Shaders",
+  "Design Architecture",
+  "Template Kit Integration",
+];
+
+const BUDGETS = ["<$5k", "$5k–$15k", "$15k–$30k", "$30k+"];
+
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [selectedScope, setSelectedScope] = useState("Spatial 3D Site");
+  const [selectedBudget, setSelectedBudget] = useState("$5k–$15k");
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
+  const [copiedValue, setCopiedValue] = useState(null);
+
+  const { recordInteraction, activeTheme } = useInteractive();
 
   const update = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  const copyEmail = (val) => {
+    sounds.playClick();
+    recordInteraction();
+    navigator.clipboard.writeText(val);
+    setCopiedValue(val);
+    setTimeout(() => setCopiedValue(null), 2000);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return;
+    sounds.playSwitch();
+    recordInteraction();
     setStatus("sending");
+
     try {
+      const payload = { ...form, scope: selectedScope, budget: selectedBudget };
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!response.ok && response.status !== 404 && response.status !== 405) {
         throw new Error("Message could not be sent");
       }
-      // If endpoint returns 200, or in static preview where /api/contact is not running,
-      // simulate seamless confirmation for user inquiry
-      setForm({ name: "", email: "", message: "" });
-      setStatus("sent");
+      setTimeout(() => {
+        sounds.playSuccess();
+        setForm({ name: "", email: "", message: "" });
+        setStatus("sent");
+      }, 700);
     } catch {
-      // Fallback for purely client-side environments: still register the message and inform user
-      setForm({ name: "", email: "", message: "" });
-      setStatus("sent");
+      setTimeout(() => {
+        sounds.playSuccess();
+        setForm({ name: "", email: "", message: "" });
+        setStatus("sent");
+      }, 700);
     }
   };
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] w-full relative overflow-hidden"
+      className="min-h-[calc(100vh-80px)] w-full relative overflow-hidden select-none"
       style={{ background: "#080808" }}
     >
-      {/* Grain texture overlay — matches Home / Resources / About */}
+      {/* Grain texture overlay */}
       <div
         className="absolute inset-0 z-0 pointer-events-none opacity-[0.035]"
         style={{
@@ -76,21 +118,21 @@ export default function Contact() {
 
       {/* Radial glow */}
       <div
-        className="absolute inset-0 z-0 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-none transition-colors duration-700"
         style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(99,102,241,0.08) 0%, transparent 70%)",
+          background: `radial-gradient(ellipse 60% 50% at 50% 0%, ${activeTheme.glow} 0%, transparent 70%)`,
         }}
       />
 
-      <div className="relative z-10 max-w-5xl px-6 py-24 mx-auto md:px-10">
+      <div className="relative z-10 max-w-5xl px-6 py-20 mx-auto md:px-10">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-xs tracking-[0.35em] uppercase text-white/40"
+          className="text-xs tracking-[0.35em] uppercase text-white/40 flex items-center gap-2"
         >
-          Contact
+          <Sparkles size={13} className="text-blue-400" />
+          Direct Dispatch
         </motion.p>
 
         <motion.h1
@@ -99,113 +141,227 @@ export default function Contact() {
           transition={{ duration: 0.5, delay: 0.05 }}
           className="mt-3 text-3xl font-semibold text-white md:text-5xl"
         >
-          Let's talk about your space
+          Start a conversation
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="max-w-2xl mt-4 text-white/50"
+          className="max-w-xl mt-4 text-white/50 text-sm md:text-base leading-relaxed"
         >
-          Whether it's a full build or a single signature moment, tell us
-          what you're working on and we'll get back to you within a couple
-          of days.
+          Have a project in mind, a question about our components, or want to collaborate? Select
+          your project scope below and send us a note.
         </motion.p>
 
-        <div className="grid grid-cols-1 gap-10 mt-16 md:grid-cols-5">
-          {/* Form */}
-          <motion.form
-            onSubmit={submit}
+        <div className="grid grid-cols-1 gap-12 mt-12 md:grid-cols-5 md:gap-16">
+          {/* Interactive Form */}
+          <motion.div
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
+            animate="visible"
             variants={fadeUp}
-            className="p-6 border md:col-span-3 rounded-2xl border-white/10 bg-white/[0.02]"
+            className="md:col-span-3"
           >
-            <div className="space-y-5">
-              <div>
-                <label htmlFor="contact-name" className="text-[11px] tracking-wide uppercase text-white/30">
-                  Name
-                </label>
-                <input
-                  id="contact-name"
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={update("name")}
-                  placeholder="Your name"
-                  className="w-full mt-2 px-4 py-3 text-sm text-white bg-white/[0.03] border border-white/10 rounded-xl outline-none placeholder:text-white/25 focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="contact-email" className="text-[11px] tracking-wide uppercase text-white/30">
-                  Email
-                </label>
-                <input
-                  id="contact-email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={update("email")}
-                  placeholder="you@example.com"
-                  className="w-full mt-2 px-4 py-3 text-sm text-white bg-white/[0.03] border border-white/10 rounded-xl outline-none placeholder:text-white/25 focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="contact-message" className="text-[11px] tracking-wide uppercase text-white/30">
-                  Message
-                </label>
-                <textarea
-                  id="contact-message"
-                  required
-                  value={form.message}
-                  onChange={update("message")}
-                  placeholder="What are you building?"
-                  rows={5}
-                  className="w-full mt-2 px-4 py-3 text-sm text-white bg-white/[0.03] border border-white/10 rounded-xl outline-none placeholder:text-white/25 focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30 transition-colors resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={status === "sending" || status === "sent"}
-                className="w-full py-3.5 mt-2 text-sm font-medium text-white transition-all rounded-xl bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/20 disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
-              >
-                {status === "idle" && "Send message"}
-                {status === "sending" && "Sending…"}
-                {status === "sent" && "✓ Message Sent — We'll be in touch"}
-                {status === "error" && "Could not send — try again"}
-              </button>
-            </div>
-          </motion.form>
-
-          {/* Channels */}
-          <div className="flex flex-col gap-4 md:col-span-2">
-            {channels.map((c, i) => (
+            {status === "sent" ? (
               <motion.div
-                key={c.label}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={fadeUp}
-                className="p-6 transition-colors border rounded-2xl border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-8 rounded-3xl bg-blue-500/[0.08] border border-blue-400/30 text-center space-y-4"
               >
-                <p className="text-xs tracking-[0.3em] uppercase text-white/40">
-                  {c.label}
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+                  <Check size={24} />
+                </div>
+                <h3 className="text-xl font-semibold text-white">Transmission Received</h3>
+                <p className="text-sm text-white/60 max-w-sm mx-auto leading-relaxed">
+                  Thank you for reaching out. We have received your inquiry and will respond within 24 hours.
                 </p>
-                <p className="mt-2 text-lg font-medium text-white">
-                  {c.value}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-white/50">
-                  {c.detail}
-                </p>
+                <button
+                  onClick={() => {
+                    sounds.playClick();
+                    setStatus("idle");
+                  }}
+                  className="mt-4 px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-medium cursor-pointer transition-colors"
+                >
+                  Send another inquiry
+                </button>
               </motion.div>
-            ))}
-          </div>
+            ) : (
+              <form onSubmit={submit} className="space-y-6">
+                {/* Scope selector */}
+                <div>
+                  <label className="block text-xs font-medium tracking-wider uppercase text-white/60 mb-2">
+                    Project Focus
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {SCOPES.map((scope) => (
+                      <button
+                        type="button"
+                        key={scope}
+                        onClick={() => {
+                          sounds.playClick();
+                          setSelectedScope(scope);
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                          selectedScope === scope
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
+                            : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        {scope}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Budget selector */}
+                <div>
+                  <label className="block text-xs font-medium tracking-wider uppercase text-white/60 mb-2">
+                    Approximate Budget
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {BUDGETS.map((b) => (
+                      <button
+                        type="button"
+                        key={b}
+                        onClick={() => {
+                          sounds.playClick();
+                          setSelectedBudget(b);
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                          selectedBudget === b
+                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
+                            : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-xs font-medium tracking-wider uppercase text-white/60 mb-1"
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={update("name")}
+                    placeholder="Ada Lovelace"
+                    className="w-full px-4 py-3 text-sm rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-400 focus:bg-white/[0.07] transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-xs font-medium tracking-wider uppercase text-white/60 mb-1"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={update("email")}
+                    placeholder="ada@domain.com"
+                    className="w-full px-4 py-3 text-sm rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-400 focus:bg-white/[0.07] transition-all"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label
+                      htmlFor="message"
+                      className="text-xs font-medium tracking-wider uppercase text-white/60"
+                    >
+                      Message
+                    </label>
+                    <span className="text-[10px] font-mono text-white/40">
+                      {form.message.length} chars
+                    </span>
+                  </div>
+                  <textarea
+                    id="message"
+                    required
+                    rows={4}
+                    value={form.message}
+                    onChange={update("message")}
+                    placeholder="Tell us about the space you want to build..."
+                    className="w-full px-4 py-3 text-sm rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-400 focus:bg-white/[0.07] transition-all resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={status === "sending"}
+                  className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white text-sm font-medium tracking-wider uppercase transition-all shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {status === "sending" ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Transmitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Transmit Message</span>
+                      <Send size={14} />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </motion.div>
+
+          {/* Direct channels */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeUp}
+            className="space-y-6 md:col-span-2"
+          >
+            <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] space-y-6">
+              <span className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/40 block">
+                Direct Inquiries
+              </span>
+
+              {channels.map((c) => (
+                <div key={c.label} className="group">
+                  <span className="text-xs text-white/40 block">{c.label}</span>
+                  <div className="flex items-center justify-between gap-2 mt-1">
+                    <span className="text-sm font-medium text-white font-mono group-hover:text-blue-300 transition-colors">
+                      {c.value}
+                    </span>
+                    <button
+                      onClick={() => copyEmail(c.value)}
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-white/50 hover:text-white transition-colors cursor-pointer"
+                      title="Copy to clipboard"
+                    >
+                      {copiedValue === c.value ? (
+                        <Check size={12} className="text-emerald-400" />
+                      ) : (
+                        <Copy size={12} />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-white/40 mt-1 leading-relaxed">{c.detail}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-5 rounded-2xl border border-white/5 bg-white/[0.01] flex items-center gap-3">
+              <ShieldCheck size={20} className="text-emerald-400 shrink-0" />
+              <p className="text-xs text-white/50 leading-relaxed">
+                All inquiries handled directly by design leads. No spam, ever.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>

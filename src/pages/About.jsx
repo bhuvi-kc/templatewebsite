@@ -1,13 +1,10 @@
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
+import { Sparkles, Compass, Eye, ShieldCheck, Activity, RotateCw, Layers } from "lucide-react";
+import { sounds } from "../utils/audio";
+import { useInteractive } from "../context/InteractiveContext";
 
-/* ------------------------------------------------------------------ */
-/*  DomeSphere — a lightweight, dependency-free 3D emblem.             */
-/*  A rotating "armillary dome" built purely from CSS 3D transforms    */
-/*  + framer-motion, echoing the brand name and the DOMÉ Gallery       */
-/*  elsewhere on the site — without pulling in three.js or a new       */
-/*  Spline scene.                                                      */
-/* ------------------------------------------------------------------ */
 const RING_CONFIG = [
   { size: 420, rotateX: 75, rotateY: 0, duration: 26, opacity: 0.5 },
   { size: 420, rotateX: 75, rotateY: 60, duration: 34, opacity: 0.35 },
@@ -16,13 +13,39 @@ const RING_CONFIG = [
   { size: 260, rotateX: 10, rotateY: 90, duration: 18, opacity: 0.3 },
 ];
 
-const DomeSphere = () => {
+const InteractiveDomeSphere = ({ speedMultiplier = 1 }) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springX = useSpring(mouseX, { stiffness: 60, damping: 15 });
+  const springY = useSpring(mouseY, { stiffness: 60, damping: 15 });
+
+  const rotX = useTransform(springY, [-300, 300], [25, -25]);
+  const rotY = useTransform(springX, [-300, 300], [-35, 35]);
+
+  const handlePointerMove = (e) => {
+    const { clientX, clientY } = e;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    mouseX.set(clientX - cx);
+    mouseY.set(clientY - cy);
+  };
+
+  useEffect(() => {
+    window.addEventListener("pointermove", handlePointerMove);
+    return () => window.removeEventListener("pointermove", handlePointerMove);
+  }, []);
+
   return (
-    <div
+    <motion.div
       className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none"
-      style={{ perspective: "1400px" }}
+      style={{
+        perspective: "1400px",
+        rotateX: rotX,
+        rotateY: rotY,
+      }}
     >
-      {/* soft core glow behind the rings */}
+      {/* Soft core glow behind the rings */}
       <div
         className="absolute w-[380px] h-[380px] rounded-full"
         style={{
@@ -57,14 +80,14 @@ const DomeSphere = () => {
             }}
             animate={{ rotateZ: 360 }}
             transition={{
-              duration: ring.duration,
+              duration: ring.duration / speedMultiplier,
               repeat: Infinity,
               ease: "linear",
             }}
           />
         ))}
 
-        {/* small orbiting nodes to sell the "dome" reading */}
+        {/* Orbiting nodes */}
         {[0, 1, 2].map((i) => (
           <motion.div
             key={`node-${i}`}
@@ -81,7 +104,7 @@ const DomeSphere = () => {
             initial={{ rotateY: i * 120, rotateX: 75 }}
             animate={{ rotateY: [i * 120, i * 120 + 360] }}
             transition={{
-              duration: 20 + i * 4,
+              duration: (20 + i * 4) / speedMultiplier,
               repeat: Infinity,
               ease: "linear",
             }}
@@ -92,32 +115,32 @@ const DomeSphere = () => {
           </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
-
-/* ------------------------------------------------------------------ */
-/*  Page content                                                       */
-/* ------------------------------------------------------------------ */
 
 const pillars = [
   {
     title: "Craft",
+    icon: Sparkles,
     detail:
       "Every interaction is considered down to the easing curve. We'd rather ship less and have it feel right than pad a page with motion that doesn't earn its place.",
   },
   {
     title: "Depth",
+    icon: Compass,
     detail:
       "Flat interfaces are easy to build and easy to forget. We reach for layered light, grain, and 3D space to give screens a sense of physical presence.",
   },
   {
     title: "Clarity",
+    icon: Eye,
     detail:
       "Underneath the atmosphere is a plain, legible structure. Navigation, hierarchy, and copy are kept honest so the experience never gets in its own way.",
   },
   {
     title: "Restraint",
+    icon: ShieldCheck,
     detail:
       "One idea, executed well, beats five competing for attention. Every page here is built around a single signature moment and quiet supporting detail.",
   },
@@ -133,12 +156,22 @@ const fadeUp = {
 };
 
 export default function About() {
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const { recordInteraction, interactionCount, activeTheme } = useInteractive();
+
+  const handlePulse = () => {
+    sounds.playSwitch();
+    recordInteraction();
+    setSpeedMultiplier(3.5);
+    setTimeout(() => setSpeedMultiplier(1), 2500);
+  };
+
   return (
     <div
-      className="w-full relative overflow-hidden"
+      className="w-full relative overflow-hidden select-none"
       style={{ background: "#000000" }}
     >
-      {/* Grain texture overlay — matches Home / Resources */}
+      {/* Grain texture overlay */}
       <div
         className="absolute inset-0 z-0 pointer-events-none opacity-[0.035]"
         style={{
@@ -148,25 +181,25 @@ export default function About() {
         }}
       />
 
-      {/* Hero */}
-      <section className="relative min-h-[calc(100vh-80px)] w-full flex items-center">
-        <DomeSphere />
+      {/* Hero with interactive DomeSphere */}
+      <section className="relative min-h-[calc(100vh-80px)] w-full flex items-center justify-center">
+        <InteractiveDomeSphere speedMultiplier={speedMultiplier} />
 
         <div className="relative z-10 max-w-5xl px-6 py-24 mx-auto md:px-10 text-center">
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-xs tracking-[0.35em] uppercase text-white/40"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-[#080808]/70 backdrop-blur-md text-[11px] tracking-[0.25em] uppercase text-white/60 mb-3"
           >
-            About
-          </motion.p>
+            <span>Kinetic Studio Profile</span>
+          </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="mt-3 text-4xl font-semibold text-white md:text-6xl"
+            className="mt-3 text-4xl font-semibold text-white md:text-6xl tracking-tight"
           >
             A studio built around
             <br className="hidden md:block" /> one idea at a time
@@ -176,12 +209,53 @@ export default function About() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="max-w-xl mx-auto mt-6 text-white/50"
+            className="max-w-xl mx-auto mt-6 text-white/60 leading-relaxed text-sm md:text-base"
           >
-            DOMÉ is a small studio for interfaces that feel like spaces —
-            built with the same care for light, depth, and motion as the
-            physical rooms they're named after.
+            DOMÉ is a studio for spatial web interfaces — built with the same care for light,
+            depth, and kinetics as physical architecture.
           </motion.p>
+
+          {/* Interactive Dome trigger */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+          >
+            <button
+              onClick={handlePulse}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/30 hover:bg-blue-600/50 border border-blue-400/30 text-white text-xs tracking-wider uppercase backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95"
+            >
+              <RotateCw size={13} className={speedMultiplier > 1 ? "animate-spin" : ""} />
+              <span>{speedMultiplier > 1 ? "Hyper-Speed Active" : "Trigger Orbital Acceleration"}</span>
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Live Telemetry Strip */}
+      <section className="relative z-10 max-w-5xl px-6 mx-auto md:px-10 -mt-10 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-md">
+          <div className="text-center p-2">
+            <span className="text-[10px] tracking-widest uppercase text-white/40 block">Renderer</span>
+            <span className="text-base font-semibold text-white font-mono mt-0.5 block">60 FPS GPU</span>
+          </div>
+          <div className="text-center p-2">
+            <span className="text-[10px] tracking-widest uppercase text-white/40 block">Parallax Dome</span>
+            <span className="text-base font-semibold text-blue-400 font-mono mt-0.5 block">Active 3D</span>
+          </div>
+          <div className="text-center p-2">
+            <span className="text-[10px] tracking-widest uppercase text-white/40 block">Aura Hue</span>
+            <span className="text-base font-semibold text-white font-mono mt-0.5 block" style={{ color: activeTheme.color }}>
+              {activeTheme.name}
+            </span>
+          </div>
+          <div className="text-center p-2">
+            <span className="text-[10px] tracking-widest uppercase text-white/40 block">Total Gestures</span>
+            <span className="text-base font-semibold text-emerald-400 font-mono mt-0.5 block">
+              {interactionCount} Events
+            </span>
+          </div>
         </div>
       </section>
 
@@ -195,15 +269,12 @@ export default function About() {
           className="pb-16 border-b border-white/10"
         >
           <p className="text-xs tracking-[0.3em] uppercase text-white/40">
-            The idea
+            The Philosophy
           </p>
-          <p className="mt-4 text-lg leading-relaxed text-white/60">
-            Most sites are laid out like documents — stacked, flat, read
-            top to bottom. We started DOMÉ to build the opposite: pages
-            that behave like rooms you walk into, where depth, light, and
-            a little bit of motion do as much storytelling as the copy.
-            The name comes from the dome — a structure defined by the
-            space it encloses, not just the material it's made of.
+          <p className="mt-4 text-base md:text-lg leading-relaxed text-white/60">
+            Most sites are laid out like documents — stacked, flat, read top to bottom. We started
+            DOMÉ to build the opposite: pages that behave like tactile spaces you walk into, where
+            depth, fluid light, and responsive physics do as much storytelling as the words themselves.
           </p>
         </motion.div>
       </section>
@@ -217,26 +288,35 @@ export default function About() {
           variants={fadeUp}
           className="text-xs tracking-[0.3em] uppercase text-white/40"
         >
-          How we work
+          How we build
         </motion.p>
 
         <div className="grid grid-cols-1 gap-6 mt-8 md:grid-cols-2">
-          {pillars.map((p, i) => (
-            <motion.div
-              key={p.title}
-              custom={i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.3 }}
-              variants={fadeUp}
-              className="p-6 transition-colors border rounded-2xl border-blue-400/10 bg-white/[0.02] hover:bg-blue-500/[0.05] hover:border-blue-400/30"
-            >
-              <h3 className="text-lg font-medium text-white">{p.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/50">
-                {p.detail}
-              </p>
-            </motion.div>
-          ))}
+          {pillars.map((p, i) => {
+            const Icon = p.icon;
+            return (
+              <motion.div
+                key={p.title}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                variants={fadeUp}
+                onMouseEnter={() => sounds.playHover()}
+                className="p-6 transition-all border rounded-2xl border-white/10 bg-white/[0.02] hover:bg-white/[0.05] hover:border-blue-400/40 hover:-translate-y-1 shadow-lg group cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-400/20 flex items-center justify-center text-blue-400 mb-4 group-hover:scale-110 transition-transform">
+                  <Icon size={18} />
+                </div>
+                <h3 className="text-lg font-medium text-white group-hover:text-blue-300 transition-colors">
+                  {p.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/50">
+                  {p.detail}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
@@ -247,7 +327,7 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="pt-8 border-t border-white/10"
+          className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4"
         >
           <p className="text-sm text-white/40">
             Curious what's under the hood? See the{" "}
@@ -256,6 +336,13 @@ export default function About() {
             </Link>{" "}
             page for the full stack.
           </p>
+
+          <Link
+            to="/contact"
+            className="text-xs uppercase tracking-widest text-white/60 hover:text-white px-4 py-2 rounded-full border border-white/15 hover:border-white/30 transition-colors"
+          >
+            Initiate Conversation &rarr;
+          </Link>
         </motion.div>
       </section>
     </div>
